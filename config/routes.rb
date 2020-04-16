@@ -29,9 +29,9 @@ Rails.application.routes.draw do
       resources :artists, only: [] do
         concerns :favoritable, favoritable_type: 'Artist'
       end
-
-
     end
   end
+
+  get "*path", to: "home#index", :constraints => lambda{|req| req.path !~ /\.(png|jpg|js|css|json)$/ }
 
 end
