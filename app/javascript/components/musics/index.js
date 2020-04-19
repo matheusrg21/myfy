@@ -1,4 +1,4 @@
-import React, { Fragment, useState, useEffect } from 'react';
+import React, { Fragment, useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { Columns, Button } from 'react-bulma-components';
 import Music from './music';
@@ -10,6 +10,42 @@ const PlatSequenceButton = styled(Button)`
 const Musics = (props) => {
 	const [ songs, setSongs ] = useState([]);
 	const [ playing, setPlaying ] = useState([]);
+	const AudioRef = useRef();
+	const [ playRandom, setPlayRandom ] = useState(false);
+
+	const NextSong = () => {
+		if (playRandom) {
+			let index = Math.floor(Math.random() * props.songs.length);
+			setPlaying(props.songs[index]);
+		} else setPlaying([]);
+	};
+
+	const SwitchRandom = () => {
+		if (playRandom) {
+			setPlayRandom(false);
+			setPlaying([]);
+		} else setPlayRandom(true);
+	};
+
+	useEffect(
+		() => {
+			if (playRandom) NextSong();
+		},
+		[ playRandom ]
+	);
+
+	useEffect(
+		() => {
+			if (AudioRef.current !== null) {
+				AudioRef.current.pause();
+				AudioRef.current.load();
+				if (playing.id) {
+					AudioRef.current.play();
+				}
+			}
+		},
+		[ playing ]
+	);
 
 	useEffect(
 		() => {
@@ -33,9 +69,12 @@ const Musics = (props) => {
 			​
 			<Columns className="is-mobile is-centered">
 				<Columns.Column desktop={{ size: 2 }} mobile={{ size: 12 }} className="has-text-centered">
-					<PlatSequenceButton className="is-medium" color="primary" outlined>
-						Tocar aleatoriamente
+					<PlatSequenceButton className="is-medium" color="primary" outlined onClick={() => SwitchRandom()}>
+						{playRandom == true ? 'Parar' : 'Tocar aleatoriamente'}
 					</PlatSequenceButton>
+					<audio controls ref={AudioRef} onEnded={() => NextSong()} className="is-hidden">
+						<source src={playing.file_url} />
+					</audio>
 				</Columns.Column>
 			</Columns>
 			{songs}
